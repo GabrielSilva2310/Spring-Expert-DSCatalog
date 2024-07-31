@@ -18,11 +18,13 @@ class ProductRepositoryTests {
 	private ProductRepository repository;
 	
 	Long existsId;
+	Long noExistId;
 	Long countTotalProduct;
 	
 	@BeforeEach
 	void setUp() throws Exception {
 		existsId=5L;
+		noExistId=26L;
 		countTotalProduct=25L;
 	}
 	
@@ -35,7 +37,7 @@ class ProductRepositoryTests {
 		Assertions.assertFalse(result.isPresent());
 		
 	}
-	
+
 	@Test
 	public void saveShouldPersistWithAutoIncrementWhenIdIsNull() {
 		Product product=Factory.createProduct();
@@ -45,6 +47,21 @@ class ProductRepositoryTests {
 		Assertions.assertNotNull(product.getId());
 		Assertions.assertEquals(countTotalProduct+1, product.getId());
 		
+	}
+	
+	
+	@Test
+	public void findByIdShouldReturnOptionalNotEmptyWhenIdExist() {
+		Optional<Product> result=repository.findById(existsId);
+		
+		Assertions.assertTrue(result.isPresent());
+	}
+	
+	@Test
+	public void findByIdShouldReturnOptionalEmptyWhenIdNoExist() {
+		Optional<Product> result=repository.findById(noExistId);
+		
+		Assertions.assertTrue(result.isEmpty());
 	}
 	
 }

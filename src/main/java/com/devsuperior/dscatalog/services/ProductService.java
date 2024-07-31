@@ -69,6 +69,7 @@ public class ProductService {
 		if (!repository.existsById(id)) {
 			throw new ResourceNotFoundException("Id not found " + id);
 		}
+	
 		try {
 			repository.deleteById(id);
 		}
