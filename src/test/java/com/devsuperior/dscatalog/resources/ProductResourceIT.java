@@ -15,7 +15,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.devsuperior.dscatalog.dto.ProductDTO;
 import com.devsuperior.dscatalog.services.ProductService;
+import com.devsuperior.dscatalog.tests.Factory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -24,6 +27,10 @@ public class ProductResourceIT {
 	
 	@Autowired
 	private ProductService service;
+	
+	@Autowired
+	private ObjectMapper objectMapper;
+	
 	
 	@Autowired
 	private MockMvc mockMvc;
@@ -56,7 +63,46 @@ public class ProductResourceIT {
 		
 	}
 	
+	@Test
+	public void updateShouldReturnProductDtoWhenExistId() throws Exception {
+		
+		ProductDTO productDTO=Factory.createProductDTO();
+		String JsonBody=objectMapper.writeValueAsString(productDTO);
+		
+		String expectedName=productDTO.getName();
+		String expectedDescription=productDTO.getDescription();
 
+		ResultActions result =
+				mockMvc.perform(put("/products/{id}", existId)
+						.content(JsonBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaType.APPLICATION_JSON));
+		
+		result.andExpect(status().isOk());
+		result.andExpect(jsonPath("$.id").value(existId));
+		result.andExpect(jsonPath("$.name").value(expectedName));
+		result.andExpect(jsonPath("$.description").value(expectedDescription));
+
+		
+	}
+	
+	@Test
+	public void updateShouldReturnNotFoundWhenDoesNotExistID() throws Exception {
+		
+		ProductDTO productDTO=Factory.createProductDTO();
+		String JsonBody=objectMapper.writeValueAsString(productDTO);
+		
+		ResultActions result =
+				mockMvc.perform(put("/products/{id}", noExistId)
+						.content(JsonBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaType.APPLICATION_JSON));
+		
+		result.andExpect(status().isNotFound());
+		
+	}
+	
+	
 
 	
 	
