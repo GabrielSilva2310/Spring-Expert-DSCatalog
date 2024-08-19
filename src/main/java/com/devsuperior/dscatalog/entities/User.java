@@ -1,9 +1,15 @@
 package com.devsuperior.dscatalog.entities;
 
-import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import com.devsuperior.dscatalog.projections.UserDetailsProjection;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,10 +22,11 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
+@SuppressWarnings("serial")
 @Entity
 @Table(name = "tb_user")
-public class User implements Serializable {
-	private static final long serialVersionUID = 1L;
+public class User implements UserDetails {
+
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,6 +56,17 @@ public class User implements Serializable {
 		this.email = email;
 		this.password = password;
 	}
+	
+	
+	public User(List<UserDetailsProjection> projections) {
+		this.email=projections.get(0).getUsername();
+		this.password=projections.get(0).getPassword();
+		for(UserDetailsProjection projection : projections) {
+			addRole(new Role(projection.getRoleId(), projection.getAuthority()));
+		}
+		
+	}
+	
 
 	public Long getId() {
 		return id;
@@ -94,6 +112,18 @@ public class User implements Serializable {
 		return roles;
 	}
 	
+	public void addRole(Role role) {
+		roles.add(role);
+	}
+	
+	public boolean hasRole(String roleName) {
+		for(Role role: roles) {
+			if(role.getAuthority().equals(roleName)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	@Override
 	public int hashCode() {
@@ -110,6 +140,36 @@ public class User implements Serializable {
 			return false;
 		User other = (User) obj;
 		return Objects.equals(id, other.id);
+	}
+
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		return roles;
+	}
+
+	@Override
+	public String getUsername() {
+		return email;
+	}
+
+	@Override
+	public boolean isAccountNonExpired() {
+		return true;
+	}
+
+	@Override
+	public boolean isAccountNonLocked() {
+		return true;
+	}
+
+	@Override
+	public boolean isCredentialsNonExpired() {
+		return true;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return true;
 	}
 	
 	
