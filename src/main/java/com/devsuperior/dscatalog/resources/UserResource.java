@@ -31,6 +31,14 @@ public class UserResource {
 	@Autowired
 	private UserService service;
 	
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_OPERATOR')")
+	@GetMapping(value = "/me")
+	public ResponseEntity<UserDTO> getMe(){
+		UserDTO dto=service.getMe();
+		return ResponseEntity.ok().body(dto);
+	}
+	
+	
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	@GetMapping
 	public ResponseEntity<Page<UserDTO>> findAll(Pageable pageable) {
